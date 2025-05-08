@@ -1,0 +1,67 @@
+name: "Web Goat Pipeline "
+
+on:
+  push:
+    branches:
+      - main
+env:
+  GUARDIAN_BASE_PATH: ${{ secrets.GUARDIAN_BASE_PATH }}
+  GUARDIAN_TOKEN: ${{ secrets.GUARDIAN_TOKEN }}
+  GUARDIAN_OS: ${{ secrets.GUARDIAN_OS }}
+  
+jobs:
+  build-and-deploy:
+    runs-on: dev-server
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v2
+        
+      - name: Display Changeset
+        shell: bash
+        id: set-env
+        run: |-
+          BRANCH=$(git rev-parse --abbrev-ref HEAD)
+          echo "SERVICE_NAME=WebGoat65" >> $GITHUB_OUTPUT
+          echo "REGISTRY_NAME=ashikbootlabs" >> $GITHUB_OUTPUT
+          echo "REPO_NAME=guardian-scan" >> $GITHUB_OUTPUT
+          echo "GUARDIAN_BASE_PATH=${{ secrets.GUARDIAN_BASE_PATH }}"
+          echo "GUARDIAN_TOKEN=${{secrets.GUARDIAN_TOKEN}}"
+          echo "GUARDIAN_OS=${{secrets.GUARDIAN_OS}}"
+          echo "COMMIT_HASH=$(git rev-parse HEAD | cut -c 1-9)" >> $GITHUB_OUTPUT
+
+      - name: SAST Scan
+        shell: bash
+        run: |-
+          echo "Branch Name: ${{ steps.set-env.outputs.BRANCH }}"
+          echo "Commit Id: ${{ steps.set-env.outputs.COMMIT_ID }}"
+          echo "Service Name: ${{ steps.set-env.outputs.SERVICE_NAME }}"
+          sudo yum update -y
+          sudo yum install python3 -y
+          python3 -m pip install semgrep
+          guardian scan --scanType sast --serviceName ${{ steps.set-env.outputs.SERVICE_NAME }}
+
+      - name: Docker Build Stage
+        shell: bash
+        run: |-
+          docker login --username ${{ secrets.DOCKERHUB_USERNAME }} --password ${{ secrets.DOCKERHUB_PASSWORD }}
+          docker build -t ${{ steps.set-env.outputs.REGISTRY_NAME }}/${{ steps.set-env.outputs.REPO_NAME }}:${{ steps.set-env.outputs.COMMIT_HASH }} .
+          
+          
+      - name: Container Scan
+        shell: bash
+        run: |-
+          guardian scan --scanType container --serviceName ${{ steps.set-env.outputs.SERVICE_NAME }} --image ${{ steps.set-env.outputs.REGISTRY_NAME }}/${{ steps.set-env.outputs.REPO_NAME }}:${{ steps.set-env.outputs.COMMIT_HASH }}          
+          
+      - name: IAC Scan
+        shell: bash
+        run: |-
+          guardian scan --scanType iac --serviceName ${{ steps.set-env.outputs.SERVICE_NAME }}              
+                    
+
+      - name: SCA Scan
+        shell: bash
+        run: |-
+          guardian scan --scanType sca --serviceName ${{ steps.set-env.outputs.SERVICE_NAME }}
+
+  
