@@ -11,7 +11,7 @@ env:
   
 jobs:
   build-and-deploy:
-    runs-on: dev-server
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout source code
