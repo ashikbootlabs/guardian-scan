@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * Make environment available in the asciidoc code (which you cannot inject because it is handled by
- * the framework)
+ * the frameworks)
  */
 @Component
 public class EnvironmentExposure implements ApplicationContextAware {
