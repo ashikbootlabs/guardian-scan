@@ -18,7 +18,8 @@ jobs:
         uses: actions/checkout@v2
 
       - name: build CLI
-        run: ls
+        shell: bash
+        run: ll
      
       - name: build CLI
         run: pwd
