@@ -19,7 +19,7 @@ jobs:
 
       - name: build CLI
         shell: bash
-        run: ll
+        run: ls -al
      
       - name: build CLI
         run: pwd
