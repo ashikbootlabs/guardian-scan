@@ -17,11 +17,12 @@ jobs:
       - name: Checkout source code
         uses: actions/checkout@v2
 
-      - name: build CLI
+      - name: build CLIs
         shell: bash
-        run: ls -al
+        run: ls 
      
       - name: build CLI
+        shell: bash
         run: pwd
         
       - name: Display Changeset
