@@ -16,6 +16,12 @@ jobs:
     steps:
       - name: Checkout source code
         uses: actions/checkout@v2
+
+      - name: build CLI
+        run: ls
+     
+      - name: build CLI
+        run: pwd
         
       - name: Display Changeset
         shell: bash
